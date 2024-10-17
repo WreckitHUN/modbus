@@ -2,7 +2,10 @@ from flask import Flask, render_template, request, jsonify
 from pymodbus.client import ModbusTcpClient
 app = Flask(__name__)
 # Create client object port is 502
-client = ModbusTcpClient(host='192.168.0.1')
+PLC = '192.168.0.1'
+ESP32 = '192.168.1.254'
+
+client = ModbusTcpClient(host=ESP32)
 
 
 @app.route('/')
@@ -31,6 +34,18 @@ def send_command():
         client.write_coil(address=2, value=False)
 
     return jsonify({'status': 'success', 'command': command})
+
+
+@app.route('/read_input_registers')
+def read_input_registers():
+    result = client.read_input_registers(address=0)
+    return jsonify(result.registers)
+
+
+@app.route('/read_coils')
+def read_coils():
+    result = client.read_coils(0, 2)
+    return jsonify(result.bits)
 
 
 if __name__ == '__main__':
